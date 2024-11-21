@@ -1,39 +1,27 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import React, { useState, useEffect } from 'react';
+import { Slot } from 'expo-router';
+import Splash from './splash';  // Path to your SplashScreen component
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+const _layout = () => {
+    const [isSplashVisible, setIsSplashVisible] = useState(true);
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+    useEffect(() => {
+        // Simulate splash screen for 3 seconds
+        const timer = setTimeout(() => {
+            setIsSplashVisible(false);
+        }, 3000);
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+        // Clean up the timer when the component unmounts
+        return () => clearTimeout(timer);
+    }, []);
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    // If splash screen is still visible, render the SplashScreen component
+    if (isSplashVisible) {
+        return <Splash />;
     }
-  }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+    // After the splash screen, render child components using <Slot />
+    return <Slot />;
+};
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
-}
+export default _layout;
